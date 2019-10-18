@@ -1036,22 +1036,15 @@ export class ManageWorkspaceShellPermissionsTerminalCommand extends Action {
 	}
 }
 
-export class RenameTerminalAction extends Action {
-
+export class RenameTerminalCommand extends Command {
 	public static readonly ID = TERMINAL_COMMAND_ID.RENAME;
 	public static readonly LABEL = nls.localize('workbench.action.terminal.rename', "Rename");
+	public static readonly TITLE_ARG_LABEL = nls.localize('workbench.action.terminal.rename.title', "A title to rename active terminal to");
 
-	constructor(
-		id: string, label: string,
-		@IQuickOpenService protected quickOpenService: IQuickOpenService,
-		@IQuickInputService protected quickInputService: IQuickInputService,
-		@ITerminalService protected terminalService: ITerminalService
-	) {
-		super(id, label);
-	}
-
-	public run(entry?: TerminalEntry, args?: { title: string }): Promise<any> {
-		const terminalInstance = entry ? entry.instance : this.terminalService.getActiveInstance();
+	public runCommand(accessor: ServicesAccessor, args: { title: string } | undefined): Promise<any> {
+		const quickInputService = accessor.get(IQuickInputService);
+		const terminalService = accessor.get(ITerminalService);
+		const terminalInstance = terminalService.getActiveInstance();
 		if (!terminalInstance) {
 			return Promise.resolve(undefined);
 		}
@@ -1059,7 +1052,7 @@ export class RenameTerminalAction extends Action {
 			terminalInstance.setTitle(title, TitleEventSource.Api);
 			return Promise.resolve(undefined);
 		}
-		return this.quickInputService.input({
+		return quickInputService.input({
 			value: terminalInstance.title,
 			prompt: nls.localize('workbench.action.terminal.rename.prompt', "Enter terminal name"),
 		}).then(name => {

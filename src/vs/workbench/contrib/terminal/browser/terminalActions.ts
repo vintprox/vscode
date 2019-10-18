@@ -1050,9 +1050,13 @@ export class RenameTerminalAction extends Action {
 		super(id, label);
 	}
 
-	public run(entry?: TerminalEntry): Promise<any> {
+	public run(entry?: TerminalEntry, args?: { title: string }): Promise<any> {
 		const terminalInstance = entry ? entry.instance : this.terminalService.getActiveInstance();
 		if (!terminalInstance) {
+			return Promise.resolve(undefined);
+		}
+		if (title) {
+			terminalInstance.setTitle(title, TitleEventSource.Api);
 			return Promise.resolve(undefined);
 		}
 		return this.quickInputService.input({
